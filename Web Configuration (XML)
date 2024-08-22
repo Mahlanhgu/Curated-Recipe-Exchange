@@ -1,0 +1,34 @@
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="3.1">
+    <display-name>Curated Recipe Exchange</display-name>
+
+    <servlet>
+        <servlet-name>UserServlet</servlet-name>
+        <servlet-class>com.recipe.controllers.UserServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UserServlet</servlet-name>
+        <url-pattern>/user</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>RecipeServlet</servlet-name>
+        <servlet-class>com.recipe.controllers.RecipeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RecipeServlet</servlet-name>
+        <url-pattern>/recipe</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>RecipeCollectionServlet</servlet-name>
+        <servlet-class>com.recipe.controllers.RecipeCollectionServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RecipeCollectionServlet</servlet-name>
+        <url-pattern>/collection</url-pattern>
+    </servlet-mapping>
+
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+</web-app>
