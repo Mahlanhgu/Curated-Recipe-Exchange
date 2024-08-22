@@ -1,0 +1,146 @@
+package com.recipe.dao;
+
+import com.recipe.models.User;
+import com.recipe.utils.DatabaseManager;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class UserDAO {
+    private Connection connection;
+
+    public UserDAO() throws SQLException {
+        connection = DatabaseManager.getConnection();
+    }
+
+    public void addUser(User user) throws SQLException {
+        String sql = "INSERT INTO USERS (username, email, password) VALUES (?, ?, ?)";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, user.getUsername());
+            statement.setString(2, user.getEmail());
+            statement.setString(3, user.getPassword());
+            statement.executeUpdate();
+        }
+    }
+
+    public User getUserByUsername(String username) throws SQLException {
+        String sql = "SELECT * FROM USERS WHERE username = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, username);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    User user = new User();
+                    user.setId(resultSet.getInt("id"));
+                    user.setUsername(resultSet.getString("username"));
+                    user.setEmail(resultSet.getString("email"));
+                    user.setPassword(resultSet.getString("password"));
+                    return user;
+                }
+            }
+        }
+        return null;
+    }
+}
+
+package com.recipe.dao;
+
+import com.recipe.models.Recipe;
+import com.recipe.models.User;
+import com.recipe.utils.DatabaseManager;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class RecipeDAO {
+    private Connection connection;
+
+    public RecipeDAO() throws SQLException {
+        connection = DatabaseManager.getConnection();
+    }
+
+    public void addRecipe(Recipe recipe) throws SQLException {
+        String sql = "INSERT INTO RECIPES (title, description, ingredients, instructions, author_id) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, recipe.getTitle());
+            statement.setString(2, recipe.getDescription());
+            statement.setString(3, String.join(",", recipe.getIngredients()));
+            statement.setString(4, recipe.getInstructions());
+            statement.setInt(5, recipe.getAuthor().getId());
+            statement.executeUpdate();
+        }
+    }
+
+    public List<Recipe> getAllRecipes() throws SQLException {
+        String sql = "SELECT * FROM RECIPES";
+        List<Recipe> recipes = new ArrayList<>();
+        try (PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            while (resultSet.next()) {
+                Recipe recipe = new Recipe();
+                recipe.setId(resultSet.getInt("id"));
+                recipe.setTitle(resultSet.getString("title"));
+                recipe.setDescription(resultSet.getString("description"));
+                recipe.setIngredients(resultSet.getString("ingredients").split(","));
+                recipe.setInstructions(resultSet.getString("instructions"));
+                recipes.add(recipe);
+            }
+        }
+        return recipes;
+    }
+}
+
+package com.recipe.dao;
+
+import com.recipe.models.Recipe;
+import com.recipe.models.RecipeCollection;
+import com.recipe.utils.DatabaseManager;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
+public class RecipeCollectionDAO {
+    private Connection connection;
+
+    public RecipeCollectionDAO() throws SQLException {
+        connection = DatabaseManager.getConnection();
+    }
+
+    public void addRecipeCollection(RecipeCollection collection) throws SQLException {
+        String sql = "INSERT INTO RECIPECOLLECTIONS (name) VALUES (?)";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, collection.getName());
+            statement.executeUpdate();
+        }
+    }
+
+    public RecipeCollection getRecipeCollectionById(int id) throws SQLException {
+        String sql = "SELECT * FROM RECIPECOLLECTIONS WHERE id = ?";
+        RecipeCollection collection = new RecipeCollection();
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    collection.setId(resultSet.getInt("id"));
+                    collection.setName(resultSet.getString("name"));
+                    collection.setRecipes(getRecipesByCollectionId(id));
+                }
+            }
+        }
+        return collection;
+    }
+
+    private List<Recipe> getRecipesByCollectionId(int collectionId) throws SQLException {
+        String sql = "SELECT * FROM RECIPES WHERE collection_id = ?";
+        RecipeDAO recipeDAO = new RecipeDAO();
+        return recipeDAO.getAllRecipes();
+    }
+}
