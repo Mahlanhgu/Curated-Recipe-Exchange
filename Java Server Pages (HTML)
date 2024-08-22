@@ -1,0 +1,104 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Curated Recipe Exchange</title>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+<body>
+    <h1>Welcome to the Curated Recipe Exchange</h1>
+    <a href="register.jsp">Register</a> | <a href="login.jsp">Login</a>
+</body>
+</html>
+
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+<body>
+    <h1>Login</h1>
+    <form action="user" method="post">
+        <input type="hidden" name="action" value="login">
+        <label>Username:</label><input type="text" name="username"><br>
+        <label>Password:</label><input type="password" name="password"><br>
+        <input type="submit" value="Login">
+    </form>
+</body>
+</html>
+
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Register</title>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+<body>
+    <h1>Register</h1>
+    <form action="user" method="post">
+        <input type="hidden" name="action" value="register">
+        <label>Username:</label><input type="text" name="username"><br>
+        <label>Email:</label><input type="text" name="email"><br>
+        <label>Password:</label><input type="password" name="password"><br>
+        <input type="submit" value="Register">
+    </form>
+</body>
+</html>
+
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Home</title>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+<body>
+    <h1>Welcome, <%= ((User) session.getAttribute("currentUser")).getUsername() %></h1>
+    <a href="addRecipe.jsp">Add Recipe</a> | <a href="recipe?action=view">View Recipes</a> | <a href="logout.jsp">Logout</a>
+</body>
+</html>
+
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Home</title>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+<body>
+    <h1>Welcome, <%= ((User) session.getAttribute("currentUser")).getUsername() %></h1>
+    <a href="addRecipe.jsp">Add Recipe</a> | <a href="recipe?action=view">View Recipes</a> | <a href="logout.jsp">Logout</a>
+</body>
+</html>
+
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Add Recipe</title>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+<body>
+    <h1>Add a New Recipe</h1>
+    <form action="recipe" method="post">
+        <input type="hidden" name="action" value="add">
+        <label>Title:</label><input type="text" name="title"><br>
+        <label>Description:</label><input type="text" name="description"><br>
+        <label>Ingredients (comma-separated):</label><input type="text" name="ingredients"><br>
+        <label>Instructions:</label><textarea name="instructions"></textarea><br>
+        <input type="submit" value="Add Recipe">
+    </form>
+</body>
+</html>
+
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Recipe Details</title>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+<body>
+    <h1><%= request.getAttribute("recipe").getTitle() %></h1>
+    <p>Description: <%= request.getAttribute("recipe").getDescription() %></p>
+    <p>Ingredients: <%= String.join(", ", request.getAttribute("recipe").getIngredients()) %></p>
+    <p>Instructions: <%= request.getAttribute("recipe").getInstructions() %></p>
+    <a href="home.jsp">Back to Home</a>
+</body>
+</html>
