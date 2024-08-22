@@ -1,0 +1,170 @@
+package com.recipe.controllers;
+
+import com.recipe.dao.UserDAO;
+import com.recipe.models.User;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.*;
+import java.io.IOException;
+import java.sql.SQLException;
+
+public class UserServlet extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String action = request.getParameter("action");
+        if (action.equals("register")) {
+            handleRegister(request, response);
+        } else if (action.equals("login")) {
+            handleLogin(request, response);
+        }
+    }
+
+    private void handleRegister(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String username = request.getParameter("username");
+        String email = request.getParameter("email");
+        String password = request.getParameter("password");
+
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(password);
+
+        try {
+            UserDAO userDAO = new UserDAO();
+            userDAO.addUser(user);
+            request.getRequestDispatcher("login.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException("Cannot register user", e);
+        }
+    }
+
+    private void handleLogin(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        try {
+            UserDAO userDAO = new UserDAO();
+            User user = userDAO.getUserByUsername(username);
+
+            if (user != null && user.getPassword().equals(password)) {
+                HttpSession session = request.getSession();
+                session.setAttribute("currentUser", user);
+                request.getRequestDispatcher("home.jsp").forward(request, response);
+            } else {
+                response.sendRedirect("login.jsp?error=Invalid credentials");
+            }
+        } catch (SQLException e) {
+            throw new ServletException("Cannot authenticate user", e);
+        }
+    }
+}
+
+package com.recipe.controllers;
+
+import com.recipe.dao.RecipeDAO;
+import com.recipe.models.Recipe;
+import com.recipe.models.User;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.*;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+
+public class RecipeServlet extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String action = request.getParameter("action");
+        if (action.equals("add")) {
+            handleAddRecipe(request, response);
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        handleViewRecipes(request, response);
+    }
+
+    private void handleAddRecipe(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String title = request.getParameter("title");
+        String description = request.getParameter("description");
+        String ingredients = request.getParameter("ingredients");
+        String instructions = request.getParameter("instructions");
+
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("currentUser");
+
+        Recipe recipe = new Recipe();
+        recipe.setTitle(title);
+        recipe.setDescription(description);
+        recipe.setIngredients(ingredients.split(","));
+        recipe.setInstructions(instructions);
+        recipe.setAuthor(currentUser);
+
+        try {
+            RecipeDAO recipeDAO = new RecipeDAO();
+            recipeDAO.addRecipe(recipe);
+            request.getRequestDispatcher("home.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException("Cannot add recipe", e);
+        }
+    }
+
+    private void handleViewRecipes(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            RecipeDAO recipeDAO = new RecipeDAO();
+            List<Recipe> recipes = recipeDAO.getAllRecipes();
+            request.setAttribute("recipes", recipes);
+            request.getRequestDispatcher("viewRecipes.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException("Cannot retrieve recipes", e);
+        }
+    }
+}
+
+package com.recipe.controllers;
+
+import com.recipe.dao.RecipeCollectionDAO;
+import com.recipe.models.RecipeCollection;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.*;
+import java.io.IOException;
+import java.sql.SQLException;
+
+public class RecipeCollectionServlet extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String action = request.getParameter("action");
+        if (action.equals("createCollection")) {
+            handleCreateCollection(request, response);
+        }
+    }
+
+    private void handleCreateCollection(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String name = request.getParameter("name");
+
+        RecipeCollection collection = new RecipeCollection();
+        collection.setName(name);
+
+        try {
+            RecipeCollectionDAO collectionDAO = new RecipeCollectionDAO();
+            collectionDAO.addRecipeCollection(collection);
+            request.getRequestDispatcher("home.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException("Cannot create recipe collection", e);
+        }
+    }
+}
